@@ -12,17 +12,21 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'sho app',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
+        title: 'sho app',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
           scaffoldBackgroundColor: GlobalVariables.backgroundColor,
           colorScheme: const ColorScheme.light(
             primary: GlobalVariables.secondaryColor,
           ),
           appBarTheme: const AppBarTheme(
-              elevation: 0, iconTheme: IconThemeData(color: Colors.white))),
-      onGenerateRoute: (settings) => generateRoute(settings),
-      home: const AuthScreen()
-    );
+            elevation: 0,
+            iconTheme: IconThemeData(
+              color: Colors.black
+              ),
+          ),
+        ),
+        onGenerateRoute: (settings) => generateRoute(settings),
+        home: const AuthScreen());
   }
 }
