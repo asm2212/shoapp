@@ -4,12 +4,13 @@
   "description": "ecommerce app",
   "main": "index.js",
   "scripts": {
-    "start" : "node index.js",
-   "dev" : "nodemon index.js"
+    "start": "node index.js",
+    "dev": "nodemon index.js"
   },
   "author": "asm",
   "license": "ISC",
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "express": "^4.21.0",
     "http": "^0.0.1-security",
     "mongoose": "^8.6.3",
