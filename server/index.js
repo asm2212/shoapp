@@ -2,8 +2,6 @@ const express = require("express");
 const authRouter = require("./routes/auth");
 const mongoose = require("mongoose");
 
-
-
 const app = express();
 PORT = 3000;
 MONGO_DB = "mongodb://0.0.0.0:27017/shoapp";
