@@ -1,5 +1,6 @@
 const express = require("express");
 const bcryptjs = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 
 const authRouter = express.Router();
@@ -21,5 +22,31 @@ authRouter.post("/api/signup", async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
+
+authRouter.post("/api/signin", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ error: "User not found" });
+    }
+    const isMatch = await bcryptjs.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ error: "Invalid password" });
+    }
+   
+    const token = jwt.sign(
+      { id: user._id },
+      "password key",
+      { expiresIn: "1h" }
+    );
+    res.json(
+      {token,...user._doc}
+    );
+    } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+  });
+
 
 module.exports = authRouter;
