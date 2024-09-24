@@ -3,10 +3,10 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shoapp/common/widgets/bottom_bar.dart';
 import 'package:shoapp/constants/error_handling.dart';
 import 'package:shoapp/constants/global_variables.dart';
 import 'package:shoapp/constants/utils.dart';
-import 'package:shoapp/features/home/screens/home_screen.dart';
 import 'package:shoapp/models/user.dart';
 import 'package:http/http.dart' as http;
 import 'package:shoapp/providers/user_provider.dart';
@@ -89,7 +89,7 @@ class AuthService {
           await prefs.setString('x-auth-token', jsonDecode(res.body)['token']);
           Navigator.pushNamedAndRemoveUntil(
             context,
-            HomeScreen.routeName,
+            BottomBar.routeName,
             (route) => false,
           );
         },
