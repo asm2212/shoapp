@@ -10,8 +10,9 @@ import 'package:shoapp/models/product.dart';
 import 'package:shoapp/providers/user_provider.dart';
 import 'package:http/http.dart' as http;
 
-class AdminServices{
-  void sellProduct({
+class AdminServices {
+  // Upload and sell a product
+  Future<void> sellProduct({
     required BuildContext context,
     required String name,
     required String description,
@@ -20,83 +21,88 @@ class AdminServices{
     required String category,
     required List<File> images,
   }) async {
-    final userProvider = Provider.of<UserProvider>(context,listen: false);
-    try {
-      final cloudinary = CloudinaryPublic("dnoqcuwhz", "nye5swkn");
-      List<String> imageUrls = [];
-      for(int i =0; i < images.length;i++){
-        CloudinaryResponse res = await cloudinary.uploadFile(
-          CloudinaryFile.fromFile(images[i].path,folder: name)
-        );
-        imageUrls.add(res.secureUrl);
-      }
-       Product product = Product(
-        name: name,
-         description: description, 
-         category: category, 
-         quantity: quantity,
-          price: price, 
-          images: imageUrls
-          );
-
-      http.Response res = await  http.post(
-          Uri.parse('$uri/admin/add-product'),
-          headers: {
-              'Content-Type': 'application/json; charset=UTF-8',
-              'x-auth-token' : userProvider.user.token
-          },
-          body: product.toJson(),
-          );
-
-        httpErrorHandler(
-        response: res,
-        context: context,
-        onSuccess: () async{
-          showSnackBar(
-            context, 
-            "Product added successfully",
-          );
-          Navigator.pop(context);
-        },
-      );
-      
-    } catch (e) {
-      showSnackBar(context, e.toString());
-    }
-
-  Future<List<Product>> fetchAllProducts(BuildContext context) async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
-    List<Product> productList = [];
     try {
-      http.Response res =
-          await http.get(Uri.parse('$uri/admin/get-products'), headers: {
-        'Content-Type': 'application/json; charset=UTF-8',
-        'x-auth-token': userProvider.user.token,
-      });
+      List<String> imageUrls = await _uploadImages(name, images);
+      Product product = Product(
+        name: name,
+        description: description,
+        category: category,
+        quantity: quantity,
+        price: price,
+        images: imageUrls,
+      );
+
+      http.Response res = await http.post(
+        Uri.parse('$uri/admin/add-product'),
+        headers: {
+          'Content-Type': 'application/json; charset=UTF-8',
+          'x-auth-token': userProvider.user.token,
+        },
+        body: product.toJson(),
+      );
 
       httpErrorHandler(
         response: res,
         context: context,
         onSuccess: () {
-          for (int i = 0; i < jsonDecode(res.body).length; i++) {
-            productList.add(
-              Product.fromJson(
-                jsonEncode(
-                  jsonDecode(res.body)[i],
-                ),
-              ),
-            );
+          showSnackBar(context, "Product added successfully");
+          Navigator.pop(context);
+        },
+      );
+    } catch (e) {
+      showSnackBar(context, e.toString());
+    }
+  }
+
+  // Upload images to Cloudinary
+  Future<List<String>> _uploadImages(String folderName, List<File> images) async {
+    final cloudinary = CloudinaryPublic("dnoqcuwhz", "nye5swkn");
+    List<String> imageUrls = [];
+
+    for (var image in images) {
+      CloudinaryResponse res = await cloudinary.uploadFile(
+        CloudinaryFile.fromFile(image.path, folder: folderName),
+      );
+      imageUrls.add(res.secureUrl);
+    }
+
+    return imageUrls;
+  }
+
+  // Fetch all products
+  Future<List<Product>> fetchAllProducts(BuildContext context) async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    List<Product> productList = [];
+
+    try {
+      http.Response res = await http.get(
+        Uri.parse('$uri/admin/get-products'),
+        headers: {
+          'Content-Type': 'application/json; charset=UTF-8',
+          'x-auth-token': userProvider.user.token,
+        },
+      );
+
+      httpErrorHandler(
+        response: res,
+        context: context,
+        onSuccess: () {
+          List decodedProducts = jsonDecode(res.body);
+          for (var product in decodedProducts) {
+            productList.add(Product.fromJson(jsonEncode(product)));
           }
         },
       );
     } catch (e) {
       showSnackBar(context, e.toString());
     }
+
     return productList;
   }
-  }
 
-    void deleteProduct({
+  // Delete a product
+  Future<void> deleteProduct({
     required BuildContext context,
     required Product product,
     required VoidCallback onSuccess,
@@ -110,22 +116,16 @@ class AdminServices{
           'Content-Type': 'application/json; charset=UTF-8',
           'x-auth-token': userProvider.user.token,
         },
-        body: jsonEncode({
-          'id': product.id,
-        }),
+        body: jsonEncode({'id': product.id}),
       );
 
       httpErrorHandler(
         response: res,
         context: context,
-        onSuccess: () {
-          onSuccess();
-        },
+        onSuccess: onSuccess,
       );
     } catch (e) {
       showSnackBar(context, e.toString());
     }
   }
-
-  fetchAllProducts(BuildContext context) {}
 }
